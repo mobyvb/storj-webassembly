@@ -107,6 +107,11 @@ func UploadAndDownloadData(ctx context.Context,
 		return fmt.Errorf("got different object back: %q != %q", dataToUpload, receivedContents)
 	}
 
+	document := js.Global().Get("document")
+	p := document.Call("createElement", "p")
+	p.Set("innerHTML", receivedContents)
+	document.Get("body").Call("appendChild", p)
+
 	return nil
 }
 
