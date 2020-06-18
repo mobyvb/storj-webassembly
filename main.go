@@ -1,3 +1,5 @@
+// +build js
+
 package main
 
 import (
@@ -7,6 +9,7 @@ import (
 	"io"
 	"io/ioutil"
 	"net"
+	"os"
 	"strings"
 	"syscall/js"
 	"time"
@@ -15,6 +18,56 @@ import (
 )
 
 func main() {
+	jsCallbackFuncName := os.Args[1]
+
+	err := initApp(jsCallbackFuncName)
+	if err != nil {
+		exit(err)
+	}
+}
+
+// initApp initializes the application registering what's needed in the browser.
+// It returns an error if the `storjGo` browser global variable is already
+// defined.
+func initApp(jsCallbackFuncName string) error {
+	g := js.Global()
+	cb := g.Get(jsCallbackFuncName)
+	if cb.Type() != js.TypeFunction {
+		return fmt.Errorf(
+			"expectation violation: %s isn't a function declared in the global object",
+			jsCallbackFuncName,
+		)
+	}
+
+	sg := map[string]interface{}{
+		"funcs": map[string]interface{}{},
+	}
+
+	// register the Go functions availabe in the browser
+	sgFns := sg["funcs"].(map[string]interface{})
+
+	sgFns["access"] = js.FuncOf(func(_ js.Value, args []js.Value) interface{} {
+		satAddr := args[0].String()
+		apiKey := args[1].String()
+		passphrase := args[2].String()
+
+		return access(satAddr, apiKey, passphrase)
+	})
+
+	_ = cb.Invoke(sg)
+	return nil
+}
+
+func exit(err error) {
+	if err != nil {
+		println("fatal error:", err.Error())
+		os.Exit(1)
+	}
+
+	os.Exit(0)
+}
+
+func mainOld() {
 	var satellite string
 	var passphrase string
 	var apikey string
