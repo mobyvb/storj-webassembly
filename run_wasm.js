@@ -1,8 +1,14 @@
-'use strict';
-
+console.log("in run_wasm.js")
 
 const go = new Go();
-WebAssembly.instantiateStreaming(fetch("main.wasm"), go.importObject).then((result) => {
-  go.run(result.instance);
-});
+console.log("in run_wasm.js 2")
+WebAssembly.instantiateStreaming(
+  fetch("main.wasm").catch((error) => {
+    console.log('Error:', error);
+  }), go.importObject).then((result) => {
+    console.log("calling go.run() WASM")
+    go.run(result.instance);
+  }).catch((error) => {
+    console.log('Error:', error);
+  });
 
