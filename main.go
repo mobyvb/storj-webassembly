@@ -111,6 +111,7 @@ func UploadAndDownloadData(ctx context.Context,
 	if !bytes.Equal(receivedContents, dataToUpload) {
 		return fmt.Errorf("got different object back: %q != %q", dataToUpload, receivedContents)
 	}
+	fmt.Printf("**** got back \"%s\" ****\n", string(receivedContents))
 
 	return nil
 }

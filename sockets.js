@@ -27,10 +27,6 @@ function socketRead(id, bytesRequested, callback) {
         callback(new Uint8Array(0), false);
         return
     }
-    if (Reads[id].EOF) {
-        console.log('EOF (JS) #' + id)
-        callback(new Uint8Array(0), true);
-    }
     console.log('read (JS) #' + id + ' : ' + Reads[id].data.length + " bytes")
     var toSend = Reads[id].data;
     if (Reads[id].data.length > bytesRequested) {
@@ -41,7 +37,7 @@ function socketRead(id, bytesRequested, callback) {
         Reads[id].data = new Uint8Array(0)
     }
     //force other functions to be allowed to run
-    setTimeout(function () { callback(toSend, false); }, 1);
+    setTimeout(function () { callback(toSend, Reads[id].EOF); }, 1);
 }
 
 function socketWrite(id, buf, callback) {
